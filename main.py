@@ -13,8 +13,9 @@ from pathlib import Path
 
 import anthropic
 from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
@@ -285,7 +286,15 @@ def create_pptx(title: str, slides_data: list, style: str = "professional") -> s
 # Routes
 # ───────────────────────────────────────────
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
+def chat_ui():
+    """Giao diện chat"""
+    html_file = Path(__file__).parent / "index.html"
+    if html_file.exists():
+        return HTMLResponse(content=html_file.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>index.html not found</h1>", status_code=404)
+
+@app.get("/api")
 def root():
     return {
         "message": "🤖 AI API đang hoạt động!",
